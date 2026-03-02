@@ -1,0 +1,88 @@
+seed_everything: 42
+model:
+    class_path: stoic_train.lightning_model.StoichiometryModelLightning
+    init_args:
+        stoichiometry_classes_to_use: [1, 2, 4, 3, 6, 8, 5, 12, 24, 10, 14, 7, 9, 16]
+        seq_embed_model_name: esm2_t33_650M_UR50D
+        finetune_seq_embed_model: false
+        max_seq_len: 514
+        seq_feature_encoder: GCNConv
+        feature_pooling_strategy: SelfAttentionPooling
+        predict_unknown_classes: false
+        load_in_4bit: true
+        lora_r: 32
+        lora_alpha: 16
+        lora_dropout: 0.05
+        seq_feature_encoder_dropout: 0.2
+        use_precomputed_embeddings: false
+        seq_embed_model_chunk_size: 256
+        use_contacting_res_weight: true
+        loss: stoic_train.losses.ComplexProductLoss
+        use_focal: false
+        fps_return_weights: true
+        fps_reduction_factor: 1
+        use_sparsity_loss: false
+        use_residue_weight_loss: true
+        use_pretrained_res_pred_model: false
+        pretrained_res_pred_model_path: null
+        residue_weight_loss_type: ResidueWeightFocalLoss
+        residue_lambda: 10.0
+        sparsity_lambda: 10.0
+        fps_use_soft_pooling: true
+        fps_num_heads: 4
+        seq_feature_encoder_num_heads: 4
+
+data:
+    class_path: stoic_train.dataset.StoichiometryDataModule
+    init_args:
+        root: /scicore/home/schwede/litvin0000/projects/stoichiometry_prediction/data/graphs_wo_emb/data_pdb_jan26/
+        data_file: /scicore/home/schwede/litvin0000/projects/stoichiometry_prediction/data/pdb_cif_files_list_jan26_processed_clust_time_deduplicated.csv
+        batch_size: 64
+        max_num_nodes: 1000
+        max_num_edges: 2000
+        max_samples_per_stoichiometry_class: 5000000
+        sample_training_data: false
+trainer:
+    max_epochs: 100
+    accumulate_grad_batches: 1
+    # limit_train_batches: 680
+    num_sanity_val_steps: 0
+    deterministic: false
+    benchmark: false
+    logger:
+        class_path: lightning.pytorch.loggers.WandbLogger
+        init_args:
+            save_dir: /scicore/home/schwede/litvin0000/projects/stoichiometry_prediction/code/logs/stoic_logs/wandb
+            mode: offline
+            project: Stoichiometry_model
+            log_model: false
+            prefix: ""
+            name: SM-training
+    enable_checkpointing: true
+    enable_progress_bar: true
+    gradient_clip_val: 1.0
+    gradient_clip_algorithm: norm
+    log_every_n_steps: 1
+    accelerator: auto
+    strategy: auto
+    precision: 32
+    callbacks:
+    - class_path: stoic_train.callbacks.StoichiometryModelClassWeights
+      init_args:
+        method: effective_samples
+        beta: 0.9999
+    - class_path: stoic_train.callbacks.ResamplingCallback
+    - class_path: stoic_train.callbacks.SetupWandB
+    - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: epoch
+        log_momentum: false
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: "/scicore/home/schwede/litvin0000/projects/stoichiometry_prediction/code/logs/stoic_logs/checkpoints/$JOB_NAME"
+        filename: model-{epoch}-{val_val_node_metrics_set1MulticlassAveragePrecision:.4f}
+        monitor: val_val_node_metrics_set1MulticlassAveragePrecision
+        mode: max
+        save_last: true
+        save_top_k: 10
+        verbose: true

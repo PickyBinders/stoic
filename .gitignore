@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Model artifacts
+*.pt
+*.ckpt
+*.pth
+*.pkl
+*.bin
+*.safetensors
+stoic_4bit/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Logs
+logs/
+wandb/
+*.out
+
+# OS
+.DS_Store
+Thumbs.db

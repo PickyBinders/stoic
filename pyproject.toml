@@ -1,0 +1,50 @@
+
+[project]
+name = "stoic"
+version = "0.1.0"
+description = "Fast and accurate protein stoichiometry prediction"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch==2.9.0",
+    "torch-geometric==2.5.2",
+    "transformers>=5.2.0",
+    "numpy==1.26.4",
+    "tqdm==4.66.2",
+    "loguru==0.7.2",
+    "huggingface-hub>=1.4.1",
+    "bitsandbytes>=0.49.2",
+    "accelerate>=1.12.0",
+    "peft==0.13.2",
+
+]
+
+[project.optional-dependencies]
+training = [
+    "lightning>=2.4.0",
+    "wandb>=0.16.6",
+    "pandas>=2.2.2",
+    "GPUtil==1.4.0",
+    "matplotlib==3.10.6",
+    "seaborn==0.13.2",
+    "torchmetrics>=1.2.0",
+    "graphein>=1.7.0",
+    "scikit-learn>=1.3.0",
+    "jsonargparse[signatures]>=4.27.7",
+]
+[project.urls]
+Homepage = "https://github.com/PickyBinders/stoic"
+Issues = "https://github.com/PickyBinders/stoic/issues"
+
+[project.scripts]
+stoic_predict_stoichiometry = "stoic.predict_stoichiometry:main"
+
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["stoic", "stoic_train"]
