@@ -305,6 +305,22 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
             output["residue_weights"] = residue_weights
 
         return output
+    
+    def get_edge_index(
+        self, 
+        sequences: List[str]
+    ) -> torch.Tensor:
+        """Construct a fully connected edge index for the input sequences."""
+        edge_i: List[int] = []
+        edge_j: List[int] = []
+        for i in range(len(sequences)):
+            for j in range(len(sequences)):
+                edge_i.append(i)
+                edge_j.append(j)
+        edge_index = torch.tensor(
+            [edge_i, edge_j], dtype=torch.long, device=next(self.parameters()).device
+        )
+        return edge_index
 
     def predict_stoichiometry(
         self,
@@ -326,15 +342,7 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
             logger.warning(warning_message)
 
         sequences = list(set(sequences))
-        edge_i: List[int] = []
-        edge_j: List[int] = []
-        for i in range(len(sequences)):
-            for j in range(len(sequences)):
-                edge_i.append(i)
-                edge_j.append(j)
-        edge_index = torch.tensor(
-            [edge_i, edge_j], dtype=torch.long, device=next(self.parameters()).device
-        )
+        edge_index = self.get_edge_index(sequences)
         output = self.forward(sequences, edge_index)
         node_scores = output["node_scores"]
         top_combinations = top_n_stoichiometry_combinations(
