@@ -18,7 +18,7 @@ from stoic.utils import (
 )
 from stoic.layers import Identity
 from stoic import layers, feature_pooling
-from stoic.seq_emb_models import Esm2
+from stoic.seq_emb_models import Esm2, NoEmb
 
 
 class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
@@ -37,6 +37,7 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
         seq_embed_model_name: str = "facebook/esm2_t33_650M_UR50D",
         seq_feature_encoder: str = "Identity",
         feature_pooling_strategy: str = "AveragePooling",
+        from_embs: bool = False,
         **kwargs: Any,
     ) -> None:
         """Initialize model components and configuration.
@@ -52,10 +53,14 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
         self.stoichiometry_classes_to_use = stoichiometry_classes_to_use
         self.num_stoichiometry_classes = len(stoichiometry_classes_to_use)
         self.seq_embed_model_name = seq_embed_model_name
-        if "esm2" in seq_embed_model_name.lower():
-            self._seq_embed_model_cls = Esm2
+
+        if(from_embs):
+            self._seq_embed_model_cls = NoEmb
         else:
-            raise ValueError(f"Invalid sequence embedding model: {seq_embed_model_name}")
+            if "esm2" in seq_embed_model_name.lower():
+                self._seq_embed_model_cls = Esm2
+            else:
+                raise ValueError(f"Invalid sequence embedding model: {seq_embed_model_name}")
         self._seq_feature_encoder_name = seq_feature_encoder
         self._feature_pooling_strategy_name = feature_pooling_strategy
         self.seq_embed_model_chunk_size = kwargs.get("seq_embed_model_chunk_size", 1000)
@@ -253,6 +258,8 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
         sequences: List[str],
         edge_index: torch.Tensor,
         contacting_res_weight: Optional[torch.Tensor] = None,
+        sequence_embeddings: Optional[torch.Tensor] = None,
+        sequence_attention_masks: Optional[torch.Tensor] = None,
     ) -> Dict[str, torch.Tensor]:
         """Run a forward pass and return prediction artifacts.
 
@@ -268,9 +275,12 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
             Optionally includes ``residue_weights`` for weighted pooling modes.
         """
         output: Dict[str, torch.Tensor] = {}
-        sequence_embeddings, sequence_attention_masks = (
-            self.get_sequence_embeddings(sequences)
-        )
+
+        if(sequence_embeddings is None and sequence_attention_masks is None):
+            sequence_embeddings, sequence_attention_masks = (
+                self.get_sequence_embeddings(sequences)
+            )
+
         output["attention_mask"] = sequence_attention_masks
         if contacting_res_weight is not None:
             contacting_res_weight = contacting_res_weight.to(

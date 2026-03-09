@@ -207,3 +207,49 @@ class Esm2(SeqEmbModel):
         )
 
         return per_residue_embeddings, attention_mask
+
+
+class NoEmb(SeqEmbModel):
+    """No-embeddings egeneration case model"""
+
+    def __init__(
+        self,
+        model_name: str,
+        max_seq_len: int = 512,
+        full_length_inference: bool = False,
+        max_inference_seq_len: Optional[int] = None,
+        finetune: bool = False,
+        load_in_4bit: bool = False,
+        lora_r: int = 32,
+        lora_alpha: int = 16,
+        lora_dropout: float = 0.05,
+    ):
+        """Initialize ESM-2 backbone, tokenizer, and training mode settings."""
+        super().__init__(
+            model_name,
+            max_seq_len,
+            full_length_inference,
+            max_inference_seq_len,
+            finetune,
+            load_in_4bit,
+            lora_r,
+            lora_alpha,
+            lora_dropout,
+        )
+
+        self.seq_embed_size = 1280  # Default to ESM-2 embedding size for compatibility
+
+    def forward(
+        self, sequences: List[str]
+    ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+        """Generate per-token embeddings and corresponding padding mask.
+
+        Args:
+            sequences: Protein sequences as strings.
+
+        Returns:
+            A tuple ``(embeddings, attention_mask)`` where:
+            - embeddings: Tensor of shape ``[B, L, D]`` without CLS/EOS tokens.
+            - attention_mask: Boolean tensor ``[B, L]`` with ``True`` for padding.
+        """
+        return None
