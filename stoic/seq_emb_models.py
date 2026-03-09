@@ -210,7 +210,7 @@ class Esm2(SeqEmbModel):
 
 
 class NoEmb(SeqEmbModel):
-    """No-embeddings egeneration case model"""
+    """No-embeddings generation case model"""
 
     def __init__(
         self,
