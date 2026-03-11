@@ -673,8 +673,8 @@ class StoichiometryModelLightning(LightningModule):
         )
         return {
             "optimizer": optimizer,
-            # "lr_scheduler": {
-            #     "scheduler": scheduler,
-            #     "interval": "epoch",
-            # },
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "interval": "epoch",
+            },
         }

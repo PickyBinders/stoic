@@ -1,10 +1,12 @@
 from collections import Counter
+import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from huggingface_hub import PyTorchModelHubMixin
+from huggingface_hub import PyTorchModelHubMixin, login
 from loguru import logger
 
 from stoic.feature_pooling import (
@@ -305,11 +307,37 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
             output["residue_weights"] = residue_weights
 
         return output
+    
+    def get_edge_index(
+        self, 
+        sequences: List[str]
+    ) -> torch.Tensor:
+        """Construct a fully connected edge index for the input sequences."""
+        edge_i: List[int] = []
+        edge_j: List[int] = []
+        for i in range(len(sequences)):
+            for j in range(len(sequences)):
+                edge_i.append(i)
+                edge_j.append(j)
+        edge_index = torch.tensor(
+            [edge_i, edge_j], dtype=torch.long, device=next(self.parameters()).device
+        )
+        return edge_index
+
+    def enable_full_length_inference(self, max_inference_seq_len: Optional[int] = None) -> None:
+        """Switch the sequence embedding model to full-length embedding mode."""
+        self.seq_embed_model.full_length_inference = True
+        if max_inference_seq_len is not None:
+            self.seq_embed_model.max_inference_seq_len = max_inference_seq_len
+    
+    def disable_full_length_inference(self) -> None:
+        self.seq_embed_model.full_length_inference = False
 
     def predict_stoichiometry(
         self,
         sequences: List[str],
         top_n: int = 3,
+        return_residue_weights: bool = False,
     ) -> List[Dict[str, int]]:
         """Predict top-N stoichiometry assignments for input sequences."""
         duplicate_counts = {
@@ -326,15 +354,7 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
             logger.warning(warning_message)
 
         sequences = list(set(sequences))
-        edge_i: List[int] = []
-        edge_j: List[int] = []
-        for i in range(len(sequences)):
-            for j in range(len(sequences)):
-                edge_i.append(i)
-                edge_j.append(j)
-        edge_index = torch.tensor(
-            [edge_i, edge_j], dtype=torch.long, device=next(self.parameters()).device
-        )
+        edge_index = self.get_edge_index(sequences)
         output = self.forward(sequences, edge_index)
         node_scores = output["node_scores"]
         top_combinations = top_n_stoichiometry_combinations(
@@ -348,30 +368,12 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
             for seq, copy_n in zip(sequences, combination):
                 result_item[seq] = copy_n
             result.append(result_item)
-        return result
-
-    def inference(
-        self,
-        sequences: List[str],
-        top_n: int = 3,
-    ) -> List[Dict[str, int]]:
-        """Backward-compatible alias for :meth:`predict_stoichiometry`."""
-        logger.warning(
-            "`inference` is deprecated; use `predict_stoichiometry` instead.",
-        )
-        return self.predict_stoichiometry(sequences=sequences, top_n=top_n)
-
-
-if __name__ == "__main__":
-    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = Stoic.from_pretrained("PickyBinders/stoic")
-    model.eval().to(DEVICE)
-
-    sequences = [
-        "MGSSHHHHHHSSGLVPRGSHMASMTGGQQMGRGSEFGGLGDQVYNRLLNERIIFLGQPVDDDIANKITAQLLLLASDPEKDIYLYINSPGGSITAGMAIYDTMQYIKNDVVTIAMGLAAAMGQFLLSAGTPGKRFALPNAEILIHQPSAGLAGSASDIKIHAERLLHTKKRMAELTSQHTGQTIEQITRDSDRDRWFDAFEAKEYGLIDDVMTTAAGMPGGGGTGA",
-        "MGSSHHHHHHSSGLVPRGSHMEYDPYAKLFEERVIFLGVQIDDASANDVMAQLLCLESMDPDRDISVYINSPGGSFTALTAIYDTMQYVKPDVQTVCMGQAAAAAAVLLAAGTPGKRMALPNARVLIHQPYSETGRGQVSDLEIAANEILRMRSQLEDMLAKHSTTPVEKIREDIERDKILTAEDALSYGLIDQVISTRKMDNSSLR",
-        "XXXXXXXXXXXXXXXXXXXXXXXX",
-        "MGSSHHHHHHSSGLVPRGSHMASMTGGQQMGRGSEFAEGTPSTSLVLDQFGRNLTQAARESKLDPVIGREKEIERVMQVLSRRTKNNPVLIGEPGVGKTAVVEGLAQAIVKGEVPETLKDKHLYTLDLGALVAGSRYRGDFEERLKKVLKEIRTRGDIILFIDALHTLVGAGAAEGAIDAASILKPMLARGELQTIGATTLDEYRKHLEKDAALERRFQPIQVAEPSLPHTIEILKGLRDRYEAHHRVSITDEALVQAATLADRYISDRFLPDKAIDLIDEAGSRMRIRRMTAPPDLREFDEKIAGVRRDKESAIDSQDAEKAASLRDKEKQLLAAKAKREKEWKAGDMDVVAEVDGELIAEVLATATGIPVFKLTEEESSRLLRMEDELHKRVIGQVDAVKALSKAIRRTRAGLKDPKRPGGSFIFAGPSGVGKTELSKALAEFLFGDEDALISLDMSEFSEKHTVSRLFGSPPGYVGYEEGGQLTEKVRRKPFSVVLFDAVEKAHPDIFNSLLQILEDGRLTDSQGRVVDFKNTVIIMTTNLGTRDISKGFNLGFAAQGDTKSNYERMKNKVSDELKQHFRPEFLNRVDDVVVFPQLSQADILKIVDLMIDKVDERLKDRDMGIELSSSAKELLSKKGYDPVLGARPLRRTIQREIEDSLSEKILFGELRPGHIVVVDTEGEGETKTFTFRGEE",
-    ]
-    result = model.predict_stoichiometry(sequences, top_n=1)
-    print(result)
+        if return_residue_weights:
+            residue_predictions = {
+                "sequences": sequences,
+                "pred_residues": output["residue_weights"].detach().cpu().numpy(),
+                "attention_mask": output["attention_mask"].detach().cpu().numpy(),
+            }
+            return result, residue_predictions
+        else:
+            return result
