@@ -60,7 +60,6 @@ class GATLayer(nn.Module):
                 "Edge features were provided, but no edge dimension was specified. Edge features will be ignored."
             )
         elif edge_features is not None:
-            # edge_features = self.edge_norm(edge_features)
             edge_features = self.edge_importance * edge_features
 
         # GAT layer

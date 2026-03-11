@@ -190,8 +190,6 @@ class StoichiometryModelLightning(LightningModule):
             feature_pooling_strategy=self.feature_pooling_strategy,
             **stoic_kwargs,
         )
-        # self.model = torch.compile(self.model)
-
         if self.use_pretrained_res_pred_model:
             self._load_pretrained_pooling(pretrained_res_pred_model_path)
 

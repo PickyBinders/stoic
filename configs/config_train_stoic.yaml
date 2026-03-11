@@ -35,8 +35,8 @@ model:
 data:
     class_path: stoic_train.dataset.StoichiometryDataModule
     init_args:
-        root: /scicore/home/schwede/litvin0000/projects/stoichiometry_prediction/data/graphs_wo_emb/data_pdb_jan26/
-        data_file: /scicore/home/schwede/litvin0000/projects/stoichiometry_prediction/data/pdb_cif_files_list_jan26_processed_clust_time_deduplicated.csv
+        root: GRAPH_ROOT_DIR
+        data_file: data/data_file.csv
         batch_size: 64
         max_num_nodes: 1000
         max_num_edges: 2000
@@ -45,14 +45,13 @@ data:
 trainer:
     max_epochs: 100
     accumulate_grad_batches: 1
-    # limit_train_batches: 680
     num_sanity_val_steps: 0
     deterministic: false
     benchmark: false
     logger:
         class_path: lightning.pytorch.loggers.WandbLogger
         init_args:
-            save_dir: /scicore/home/schwede/litvin0000/projects/stoichiometry_prediction/code/logs/stoic_logs/wandb
+            save_dir: /logs/stoic_logs/wandb
             mode: offline
             project: Stoichiometry_model
             log_model: false
@@ -79,7 +78,7 @@ trainer:
         log_momentum: false
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
-        dirpath: "/scicore/home/schwede/litvin0000/projects/stoichiometry_prediction/code/logs/stoic_logs/checkpoints/$JOB_NAME"
+        dirpath: "logs/stoic_logs/checkpoints/stoic"
         filename: model-{epoch}-{val_val_node_metrics_set1MulticlassAveragePrecision:.4f}
         monitor: val_val_node_metrics_set1MulticlassAveragePrecision
         mode: max

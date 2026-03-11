@@ -174,7 +174,7 @@ class StoichiometryDataModule(lightning.LightningDataModule):
         self.max_samples_per_cluster = 10
 
     def _filter_data_df(self):
-        # To decreate the number of class 1 in training set. Also monomers don't have interface residues.
+        # To decrease the number of class 1 in the training set. Also monomers don't have interface residues.
         train_data_df = self.data_df.query(
             "split == 'train' & num_subunits > 1"
         ).copy()
