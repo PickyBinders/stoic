@@ -363,7 +363,7 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
         result: List[Dict[str, int]] = []
         for combination, score, prob in top_combinations:
             result_item: Dict[str, int] = {}
-            result_item["score"] = score
+            result_item["rank"] = score
             result_item["probability"] = prob
             for seq, copy_n in zip(sequences, combination):
                 result_item[seq] = copy_n
