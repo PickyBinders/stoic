@@ -11,7 +11,6 @@ from loguru import logger
 
 from stoic.feature_pooling import (
     AveragePooling,
-    LinearPooling,
     NeighborContextSelfAttentionPooling,
     SelfAttentionPooling,
 )
@@ -137,7 +136,6 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
                 ),
             )
         elif self._feature_pooling_strategy_name in [
-            "LinearPooling",
             "SelfAttentionPooling",
             "NeighborContextSelfAttentionPooling",
         ]:
@@ -363,8 +361,10 @@ class Stoic(nn.Module, PyTorchModelHubMixin, repo_url="stoic", license="mit"):
             class_labels=self.stoichiometry_classes_to_use,
         )
         result: List[Dict[str, int]] = []
-        for combination, _, _ in top_combinations:
+        for combination, score, prob in top_combinations:
             result_item: Dict[str, int] = {}
+            result_item["score"] = score
+            result_item["probability"] = prob
             for seq, copy_n in zip(sequences, combination):
                 result_item[seq] = copy_n
             result.append(result_item)
