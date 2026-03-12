@@ -78,7 +78,7 @@ def beam_search(
                 new_prob = prob * probs[node_idx, class_idx].item()
                 candidates.append((new_combination, new_score, new_prob))
 
-        beam = sorted(candidates, key=lambda x: x[1])[:beam_width]
+        beam = sorted(candidates, key=lambda x: (x[1], -x[2]))[:beam_width]
 
     top_combinations = []
     for combination, score, prob in beam[:n]:
