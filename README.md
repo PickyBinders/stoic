@@ -2,8 +2,13 @@
 
 Fast and accurate protein stoichiometry prediction.
 
+
+[![license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/PickyBinders/stoic/blob/master/LICENSE.txt)
+[![bioRxiv](https://img.shields.io/badge/bioRxiv-2026.03.13.711535-blue.svg)](https://www.biorxiv.org/content/10.64898/2026.03.13.711535)
 [![codecov](https://codecov.io/gh/PickyBinders/stoic/branch/main/graph/badge.svg)](https://codecov.io/gh/PickyBinders/stoic)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PickyBinders/stoic/blob/main/stoic_colab.ipynb)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PickyBinders/stoic/blob/main/stoic_colab.ipynb)
+[![Open in Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/PickyBinders/stoic-space)
+[![HuggingFace model](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-blue)](https://huggingface.co/PickyBinders/stoic)
 
 ![Model Architecture](images/Figure_architecture.png)
 
