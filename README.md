@@ -24,7 +24,7 @@ Pre-print: [Stoic: Fast and accurate protein stoichiometry prediction](https://w
 #### `venv`
 
 ```bash
-python -m venv .stoic-venv
+python -m venv .stoic-env
 source .stoic-venv/bin/activate
 ```
 
