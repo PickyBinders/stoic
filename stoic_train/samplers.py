@@ -19,7 +19,7 @@ class DistributedDynamicBatchSampler(BatchSampler):
 
     Args:
         sampler: Unused, kept for API compatibility with ``BatchSampler``.
-        dataset: A PyTorch-Geometric–style dataset whose elements expose
+        dataset: A PyTorch-Geometric style dataset whose elements expose
             ``num_nodes`` and ``edge_index`` attributes.
         max_num_nodes: Maximum total nodes per batch (``None`` = no limit).
         max_num_edges: Maximum total edges per batch (``None`` = no limit).
@@ -76,7 +76,7 @@ class DistributedDynamicBatchSampler(BatchSampler):
         return stats
 
     def _create_batches(self, indices: List[int]) -> List[List[int]]:
-        """Greedily pack ``indices`` into batches respecting budgets."""
+        """Greedily pack ``indices`` into batches respecting the limits."""
         batches: List[List[int]] = []
         current_batch: List[int] = []
         current_nodes = 0
@@ -146,8 +146,6 @@ class DistributedDynamicBatchSampler(BatchSampler):
         batches = self._create_batches(indices)
         num_batches_per_replica = math.floor(len(batches) / self.num_replicas)
 
-        # Subtract one for training splits to avoid an off-by-one with the
-        # scheduler's total_steps (OneCycleLR counts from 0).
         if (
             hasattr(self.dataset, "data_df")
             and "split" in self.dataset.data_df.columns

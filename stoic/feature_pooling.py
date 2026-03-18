@@ -101,17 +101,7 @@ class AveragePooling(FeaturePoolingStrategy):
         self.output_dim = output_dim
         self.norm = MaskedInstanceNorm1d(num_features=emb_dim, affine=True)
 
-        self.mlp = (
-            nn.Sequential(
-                nn.Linear(emb_dim, output_dim),
-                nn.LayerNorm(output_dim),
-                nn.GELU(),
-                nn.Dropout(0.1),
-                nn.Linear(output_dim, output_dim),
-            )
-            if emb_dim != output_dim
-            else Identity(in_channels=emb_dim, out_channels=emb_dim)
-        )
+        self.mlp = Identity(in_channels=emb_dim, out_channels=emb_dim)
 
     def pool_node_features(
         self,
@@ -139,86 +129,7 @@ class AveragePooling(FeaturePoolingStrategy):
         node_features = self.mlp(node_features)
 
         return node_features.sum(dim=1)
-
-
-class LinearPooling(FeaturePoolingStrategy):
-    def __init__(
-        self,
-        emb_dim,
-        output_dim,
-        num_heads=1,
-        return_weights=False,
-        reduction_factor=4,
-        threshold=0.5,
-        use_soft_pooling=False,
-        **kwargs,
-    ):
-        super().__init__()
-        self.emb_dim = emb_dim
-        self.output_dim = output_dim
-        self.reduction_factor = reduction_factor
-        self.use_soft_pooling = use_soft_pooling
-        self.threshold = threshold
-        self.linear = nn.Sequential(
-            nn.Linear(emb_dim, emb_dim // self.reduction_factor),
-            nn.LayerNorm(emb_dim // self.reduction_factor),
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Linear(emb_dim // self.reduction_factor, 1),
-        )
-        self.norm = MaskedInstanceNorm1d(num_features=emb_dim, affine=True)
-        self.return_weights = return_weights
-        self.mlp = (
-            nn.Sequential(
-                nn.Linear(emb_dim, output_dim),
-                nn.LayerNorm(output_dim),
-                nn.GELU(),
-                nn.Dropout(0.1),
-                nn.Linear(output_dim, output_dim),
-            )
-            if emb_dim != output_dim
-            else nn.Identity()
-        )
-
-    def pool_node_features(
-        self,
-        node_features: torch.Tensor,
-        contacting_res_weight: torch.Tensor = None,
-        attention_mask: torch.Tensor = None,
-        edge_index: torch.Tensor = None,
-    ):
-        node_features = self.norm(
-            node_features.transpose(1, 2), mask=attention_mask
-        ).transpose(1, 2)
-        average_weights_logits = self.linear(node_features)
-        average_weights_logits = torch.squeeze(average_weights_logits, dim=-1)
-
-        if attention_mask is not None:
-            average_weights_logits = average_weights_logits.masked_fill(
-                attention_mask, -1e9
-            )
-        average_weights = torch.sigmoid(average_weights_logits)
-
-        if self.use_soft_pooling:
-            weighted_features = node_features * average_weights.unsqueeze(-1)
-            pooled_features = weighted_features.sum(dim=1) / average_weights.sum(
-                dim=1, keepdim=True
-            )
-        else:
-            contacting_res = (average_weights > self.threshold).float()
-            num_active = contacting_res.sum(dim=1, keepdim=True)
-            num_active = torch.clamp(num_active, min=1.0)
-            normalized_contacting_res = contacting_res / num_active
-
-            pooled_features = node_features * normalized_contacting_res.unsqueeze(-1)
-            pooled_features = pooled_features.sum(dim=1)
-
-        pooled_features = self.mlp(pooled_features)
-        if self.return_weights:
-            return pooled_features, average_weights
-        else:
-            return pooled_features
-
+        
 
 class SelfAttentionPooling(FeaturePoolingStrategy):
     def __init__(
@@ -254,17 +165,7 @@ class SelfAttentionPooling(FeaturePoolingStrategy):
             nn.Linear(emb_dim // self.reduction_factor, 1),
         )
         self.return_weights = return_weights
-        self.mlp = (
-            nn.Sequential(
-                nn.Linear(emb_dim, output_dim),
-                nn.LayerNorm(output_dim),
-                nn.GELU(),
-                nn.Dropout(0.1),
-                nn.Linear(output_dim, output_dim),
-            )
-            if emb_dim != output_dim
-            else nn.Identity()
-        )
+        self.mlp = Identity(in_channels=emb_dim, out_channels=emb_dim)
         self.threshold = threshold
         self.use_soft_pooling = use_soft_pooling
 

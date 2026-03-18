@@ -32,6 +32,10 @@ training = [
     "scikit-learn>=1.3.0",
     "jsonargparse[signatures]>=4.27.7",
 ]
+test = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+]
 [project.urls]
 Homepage = "https://github.com/PickyBinders/stoic"
 Issues = "https://github.com/PickyBinders/stoic/issues"
@@ -48,3 +52,28 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["stoic", "stoic_train"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers --disable-warnings -m 'not integration'"
+markers = [
+    "integration: tests that require local/real external resources",
+    "gpu: tests that require CUDA/GPU",
+    "slow: tests that take noticeably longer",
+]
+
+[tool.coverage.run]
+source = ["stoic", "stoic_train"]
+branch = true
+omit = [
+    "stoic_train/metrics.py",
+    "stoic_train/train.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+omit = [
+    "stoic_train/metrics.py",
+    "stoic_train/train.py",
+]

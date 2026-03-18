@@ -30,7 +30,13 @@ stoic_4bit/
 logs/
 wandb/
 *.out
+.coverage
+coverage.xml
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment variables
+.env
+.env.tests

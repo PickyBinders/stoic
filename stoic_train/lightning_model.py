@@ -19,7 +19,6 @@ from torchmetrics.classification import (
 from stoic.model import Stoic
 from stoic.utils import print_init_args
 from stoic_train.losses import (
-    ComplexLoss,
     ComplexProductLoss,
     ResidueWeightFocalLoss,
     SparsityLoss,
@@ -202,7 +201,7 @@ class StoichiometryModelLightning(LightningModule):
 
     def _init_losses(self) -> None:
         """Instantiate the classification loss and optional auxiliary losses."""
-        if self.loss.__name__ in ("ComplexLoss", "ComplexProductLoss"):
+        if self.loss.__name__ == "ComplexProductLoss":
             self.loss = self.loss(use_focal=self.use_focal)
         else:
             self.loss = self.loss()
@@ -330,7 +329,7 @@ class StoichiometryModelLightning(LightningModule):
         complex_id: torch.Tensor,
     ) -> torch.Tensor:
         """Compute the primary classification loss for the given node scores and labels, and complex id if applicable."""
-        if isinstance(self.loss, (ComplexLoss, ComplexProductLoss)):
+        if isinstance(self.loss, ComplexProductLoss):
             return self.loss(node_scores, node_labels, complex_id)
         return self.loss(node_scores, node_labels)
 
