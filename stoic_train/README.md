@@ -9,8 +9,8 @@ Choose one option, then install training dependencies.
 ### `venv`
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+python -m venv .stoic-venv
+source .stoic-venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[training]"
 ```
