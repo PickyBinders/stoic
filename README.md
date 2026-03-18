@@ -3,6 +3,7 @@
 Fast and accurate protein stoichiometry prediction.
 
 [![codecov](https://codecov.io/gh/PickyBinders/stoic/branch/main/graph/badge.svg)](https://codecov.io/gh/PickyBinders/stoic)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PickyBinders/stoic/blob/main/stoic_colab.ipynb)
 
 ![Model Architecture](images/Figure_architecture.png)
 
