@@ -1,4 +1,4 @@
-# Stoic
+# *Stoic*
 
 Fast and accurate protein stoichiometry prediction.
 
@@ -12,10 +12,10 @@ Fast and accurate protein stoichiometry prediction.
 
 ![Model Architecture](images/Figure_architecture.png)
 
-Stoic predicts copy numbers for protein complex components directly from sequence, and can also export AF3-ready JSON based on the top predicted stoichiometries.
+*Stoic* predicts copy numbers for protein complex components directly from sequence, and can also export AF3-ready JSON based on the top predicted stoichiometries.
 
 Web version (Hugging Face Space): [stoic-space](https://huggingface.co/spaces/PickyBinders/stoic-space)  
-Pre-print: [Stoic: Fast and accurate protein stoichiometry prediction](https://www.biorxiv.org/content/10.64898/2026.03.13.711535v1.abstract?%3Fcollection=)
+Pre-print: [*Stoic*: Fast and accurate protein stoichiometry prediction](https://www.biorxiv.org/content/10.64898/2026.03.13.711535v1.abstract?%3Fcollection=)
 
 ## Installation
 
@@ -160,7 +160,7 @@ print(pred)
 
 ## Citation
 
-If you use Stoic, please cite:
+If you use *Stoic*, please cite:
 
 ```text
 @article{litvinov2026stoic,
