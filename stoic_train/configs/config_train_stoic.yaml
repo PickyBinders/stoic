@@ -5,7 +5,7 @@ model:
         stoichiometry_classes_to_use: [1, 2, 4, 3, 6, 8, 5, 12, 24, 10, 14, 7, 9, 16]
         seq_embed_model_name: esm2_t33_650M_UR50D
         finetune_seq_embed_model: false
-        max_seq_len: 514
+        max_seq_len: 514 # Including start and end of sequence tokens
         seq_feature_encoder: GCNConv
         feature_pooling_strategy: SelfAttentionPooling
         predict_unknown_classes: false
@@ -35,7 +35,7 @@ model:
 data:
     class_path: stoic_train.dataset.StoichiometryDataModule
     init_args:
-        root: GRAPH_ROOT_DIR
+        root: data/data_root/
         data_file: data/data_file.csv
         batch_size: 64
         max_num_nodes: 1000
@@ -51,7 +51,7 @@ trainer:
     logger:
         class_path: lightning.pytorch.loggers.WandbLogger
         init_args:
-            save_dir: /logs/stoic_logs/wandb
+            save_dir: logs/stoic_logs/wandb
             mode: offline
             project: Stoichiometry_model
             log_model: false
