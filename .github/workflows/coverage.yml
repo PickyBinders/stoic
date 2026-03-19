@@ -1,6 +1,8 @@
 name: Tests and Coverage
 
 on:
+  push:
+  pull_request:
   workflow_dispatch:
 
 permissions:
