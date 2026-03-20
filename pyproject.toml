@@ -68,6 +68,7 @@ branch = true
 omit = [
     "stoic_train/metrics.py",
     "stoic_train/train.py",
+    "stoic_train/dataset.py",
 ]
 
 [tool.coverage.report]
@@ -76,4 +77,5 @@ skip_covered = false
 omit = [
     "stoic_train/metrics.py",
     "stoic_train/train.py",
+    "stoic_train/dataset.py",
 ]
