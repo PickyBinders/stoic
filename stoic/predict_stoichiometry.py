@@ -254,9 +254,12 @@ def main():
 
             with open(os.path.join(output_dir, f"{complex_name}.json"), "w") as f:
                 json.dump(complex_predictions, f)
-            af3_json = _build_af3_input_json(complex_name, complex_predictions)
-            with open(os.path.join(output_dir, f"{complex_name}_af3_input.json"), "w") as f:
-                json.dump(af3_json, f)
+            for idx, candidate in enumerate(complex_predictions, 1):
+                af3_json = _build_af3_input_json(complex_name, [candidate])
+                with open(
+                    os.path.join(output_dir, f"{complex_name}_af3_input_{idx}.json"), "w"
+                ) as f:
+                    json.dump(af3_json, f)
             if residue_predictions is not None:
                 with open(
                     os.path.join(output_dir, f"{complex_name}_residue_predictions.pkl"),
@@ -279,9 +282,10 @@ def main():
         os.makedirs(args.output_dir, exist_ok=True)
         with open(os.path.join(args.output_dir, "results.json"), "w") as f:
             json.dump(results, f)
-        af3_json = _build_af3_input_json("input_sequences", results)
-        with open(os.path.join(args.output_dir, "af3_input.json"), "w") as f:
-            json.dump(af3_json, f)
+        for idx, candidate in enumerate(results, 1):
+            af3_json = _build_af3_input_json("input_sequences", [candidate])
+            with open(os.path.join(args.output_dir, f"af3_input_{idx}.json"), "w") as f:
+                json.dump(af3_json, f)
         if residue_predictions is not None:
             with open(os.path.join(args.output_dir, "residue_predictions.pkl"), "wb") as f:
                 pickle.dump(residue_predictions, f)

@@ -172,7 +172,7 @@ def test_main_output_dir_saves_results_and_residue_weights(monkeypatch, tmp_path
 
     results_path = tmp_path / "results.json"
     residues_path = tmp_path / "residue_predictions.pkl"
-    af3_path = tmp_path / "af3_input.json"
+    af3_path = tmp_path / "af3_input_1.json"
     assert results_path.exists()
     assert residues_path.exists()
     assert af3_path.exists()
@@ -233,8 +233,8 @@ def test_main_directory_input_saves_separate_results_per_complex(
 
     a_path = output_dir / "complex_a.json"
     b_path = output_dir / "complex_b.json"
-    a_af3 = output_dir / "complex_a_af3_input.json"
-    b_af3 = output_dir / "complex_b_af3_input.json"
+    a_af3 = output_dir / "complex_a_af3_input_1.json"
+    b_af3 = output_dir / "complex_b_af3_input_1.json"
     assert a_path.exists()
     assert b_path.exists()
     assert a_af3.exists()
@@ -248,3 +248,33 @@ def test_main_directory_input_saves_separate_results_per_complex(
     b_path.unlink()
     a_af3.unlink()
     b_af3.unlink()
+
+
+def test_main_output_dir_saves_af3_json_for_each_candidate(
+    monkeypatch, tmp_path: Path
+) -> None:
+    model = DummyStoicModel()
+    _patch_from_pretrained(monkeypatch, model)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "stoic_predict_stoichiometry",
+            "--sequences",
+            "AAA",
+            "BBB",
+            "--model",
+            "dummy",
+            "--top-n",
+            "2",
+            "--output-dir",
+            str(tmp_path),
+            "--device",
+            "cpu",
+        ],
+    )
+
+    ps.main()
+
+    assert (tmp_path / "af3_input_1.json").exists()
+    assert (tmp_path / "af3_input_2.json").exists()
