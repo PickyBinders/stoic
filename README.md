@@ -158,6 +158,26 @@ pred = model.predict_stoichiometry(["SENECA", "VIRTVS"], top_n=3)
 print(pred)
 ```
 
+### Output format
+
+Predictions (saved in `results.json` or returned by the Python API) are structured as a list of candidate 
+stoichiometry dictionaries ordered by confidence:
+
+```python
+[
+  {'rank': 2.0, 'probability': 0.9999439716992811, 'VIRTVS': 1, 'SENECA': 1},
+  {'rank': 3.0, 'probability': 5.297383410475358e-05, 'VIRTVS': 1, 'SENECA': 2},
+  {'rank': 3.0, 'probability': 1.2293232895887823e-06, 'VIRTVS': 2, 'SENECA': 1}
+]
+```
+
+- **`rank`**: Cumulative rank score across all entities (the sum of the ordinal ranks of the predicted copy 
+number for each entity). Lower values represent higher confidence (e.g., `2.0` means each of the 2 entities was assigned 
+its #1 most-preferred copy number: `1 + 1`).
+- **`probability`**: The joint probability of the predicted stoichiometry combination across all entities 
+(used as a secondary score and tie-breaker).
+- **`<sequence>`**: The predicted copy number for each unique protein sequence.
+
 ## Citation
 
 If you use *Stoic*, please cite:
